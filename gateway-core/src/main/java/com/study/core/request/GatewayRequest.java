@@ -1,18 +1,21 @@
 package com.study.core.request;
 
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
+
+import com.study.common.constants.BasicConst;
+import org.asynchttpclient.Request;
+import org.asynchttpclient.RequestBuilder;
+
 import com.study.common.utils.TimeUtil;
+
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import lombok.Getter;
-import org.asynchttpclient.Request;
-import org.asynchttpclient.RequestBuilder;
-
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @ClassName GatewayRequest
@@ -157,6 +160,7 @@ public class GatewayRequest implements IGatewayRequest {
         //可变变量初始化
         this.modifyHost = host;
         this.modifyPath = path;
+        this.modifyScheme = BasicConst.HTTP_PREFIX_SEPARATOR;
 
     }
 
