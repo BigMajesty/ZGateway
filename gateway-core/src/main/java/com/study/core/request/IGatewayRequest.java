@@ -75,7 +75,7 @@ public interface IGatewayRequest {
     /**
      * 获取最终的请求路径，包含请求参数
      */
-    void getFinalUrl();
+    String getFinalUrl();
 
     Request build();
 }
