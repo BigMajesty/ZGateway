@@ -21,7 +21,7 @@ import lombok.Getter;
 
 /**
  * @ClassName GatewayRequest
- * @Description
+ * @Description 网关请求消息对象
  * @Author
  * @Date 2024-07-10 16:22
  * @Version
