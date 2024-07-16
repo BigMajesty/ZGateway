@@ -2,6 +2,7 @@ package com.study.core.context;
 
 import io.netty.channel.ChannelHandlerContext;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 public interface IContext {
@@ -76,6 +77,11 @@ public interface IContext {
      * 获取异常返回对象
      */
     Throwable getThrowable();
+
+    /**
+     * 获取上下文参数
+     */
+    Object getAttribute(Map<String,Object> key);
 
     /**
      * 设置返回对象

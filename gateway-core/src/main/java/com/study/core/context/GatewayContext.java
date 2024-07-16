@@ -1,10 +1,13 @@
 package com.study.core.context;
 
+import afu.org.checkerframework.checker.oigj.qual.O;
 import com.study.common.rule.Rule;
+import com.study.common.utils.AssertUtil;
 import com.study.core.request.GatewayRequest;
 import com.study.core.response.GatewayResponse;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.ReferenceCountUtil;
 
 /**
  * @ClassName GatewayContext
@@ -20,13 +23,13 @@ public class GatewayContext extends BaseContext{
     public Rule rule;
 
     public GatewayContext(String protocol, ChannelHandlerContext nettyContext, boolean keepAlive,
-        GatewayRequest gatewayRequest, GatewayResponse gatewayResponse, Rule rule) {
+        GatewayRequest gatewayRequest, Rule rule) {
         super(protocol, nettyContext, keepAlive);
         this.gatewayRequest = gatewayRequest;
-        this.gatewayResponse = gatewayResponse;
         this.rule = rule;
     }
 
+    //构建者模式
     public static class Builder {
         private String protocol;
         private ChannelHandlerContext nettyContext;
@@ -62,5 +65,76 @@ public class GatewayContext extends BaseContext{
             this.rule = rule;
             return this;
         }
+
+        public GatewayContext build() {
+            AssertUtil.notNull(protocol,"protocol不能为空");
+            AssertUtil.notNull(nettyContext,"nettyContext不能为空");
+            AssertUtil.notNull(gatewayRequest,"gatewayRequest不能为空");
+            AssertUtil.notNull(rule,"rule不能为空");
+            return new GatewayContext(protocol,nettyContext,keepAlive,gatewayRequest,rule);
+        }
     }
+
+    public GatewayRequest getGatewayRequest() {
+        return gatewayRequest;
+    }
+
+    public void setGatewayRequest(GatewayRequest gatewayRequest) {
+        this.gatewayRequest = gatewayRequest;
+    }
+
+    public GatewayResponse getGatewayResponse() {
+        return gatewayResponse;
+    }
+
+    public void setGatewayResponse(Object response) {
+        this.gatewayResponse = (GatewayResponse) response;
+    }
+
+    public Rule getRule() {
+        return rule;
+    }
+
+    public void setRule(Rule rule) {
+        this.rule = rule;
+    }
+
+    /**
+     * 根据过滤器Id获取对应的过滤器信息
+     * @param filterId
+     * @return
+     */
+    public Rule.FilterConfig getFilterConfig(String filterId) {
+        return rule.getFilterConfig(filterId);
+    }
+
+    /**
+     * 获取请求的唯一Id
+     * @return
+     */
+    public String getUniqueId(){
+        return gatewayRequest.getUniqueId();
+    }
+
+    /**
+     * 重写父类释放资源方法，用于正在释放资源
+     * @return
+     */
+    @Override
+    public boolean releaseRequest(){
+        if(requestReleased.compareAndSet(false, true)){
+            ReferenceCountUtil.release(gatewayRequest.getFullHttpRequest());
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取原始的请求对象
+     * @return
+     */
+    public GatewayRequest getOriginRequest(){
+        return  gatewayRequest;
+    }
+
 }

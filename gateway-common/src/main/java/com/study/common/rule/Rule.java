@@ -159,4 +159,5 @@ public class Rule implements Comparable<Rule>, Serializable {
     public int hashCode(){
         return Objects.hashCode(id);
     }
+
 }

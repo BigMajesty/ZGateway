@@ -102,6 +102,11 @@ public class BaseContext implements IContext {
     }
 
     @Override
+    public Object getAttribute(Map<String, Object> key) {
+        return attributes.get(key);
+    }
+
+    @Override
     public void setResponse(Object response) {
 
     }
