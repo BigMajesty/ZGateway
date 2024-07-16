@@ -43,8 +43,8 @@ public class GatewayRequest implements IGatewayRequest {
     /**
      * 进入网关的结束时间
      */
-    @Getter
-    private final long endTime;
+//    @Getter
+//    private final long endTime;
 
     /**
      * 字符集
@@ -141,37 +141,32 @@ public class GatewayRequest implements IGatewayRequest {
      */
     private final RequestBuilder requestBuilder;
 
-    public GatewayRequest(String uniqueId, long beginTime, long endTime, Charset charset, String clientIP, String host,
-                          String path, String uri, HttpMethod method, String contentType, HttpHeaders headers,
-                          QueryStringDecoder queryStringDecoder, FullHttpRequest fullHttpRequest, RequestBuilder requestBuilder) {
-        this.uniqueId = uniqueId;
+    public GatewayRequest(String uniquedId, Charset charset, String clientIp, String host, String uri, HttpMethod method, String contentType, HttpHeaders headers, FullHttpRequest fullHttpRequest) {
+        this.uniqueId = uniquedId;
         this.beginTime = TimeUtil.currentTimeMillis();
-        this.endTime = endTime;
         this.charset = charset;
-        this.clientIP = clientIP;
+        this.clientIP = clientIp;
         this.host = host;
         this.uri = uri;
         this.method = method;
         this.contentType = contentType;
         this.headers = headers;
-        this.queryStringDecoder = new QueryStringDecoder(uri,charset);
         this.fullHttpRequest = fullHttpRequest;
-        this.requestBuilder = new RequestBuilder();
-        this.path = queryStringDecoder.path();
-
-        //可变变量初始化
+        this.queryStringDecoder = new QueryStringDecoder(uri,charset);
+        this.path  = queryStringDecoder.path();
         this.modifyHost = host;
         this.modifyPath = path;
+
         this.modifyScheme = BasicConst.HTTP_PREFIX_SEPARATOR;
+        this.requestBuilder = new RequestBuilder();
         this.requestBuilder.setMethod(getMethod().name());
         this.requestBuilder.setHeaders(getHeaders());
         this.requestBuilder.setQueryParams(queryStringDecoder.parameters());
-        ByteBuf content = fullHttpRequest.content();
-        if(Objects.nonNull(content)){
-            this.requestBuilder.setBody(content.nioBuffer());
+
+        ByteBuf contentBuffer = fullHttpRequest.content();
+        if(Objects.nonNull(contentBuffer)){
+            this.requestBuilder.setBody(contentBuffer.nioBuffer());
         }
-
-
     }
 
     /**

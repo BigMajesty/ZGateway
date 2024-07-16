@@ -84,6 +84,12 @@ public interface IContext {
     Object getAttribute(Map<String,Object> key);
 
     /**
+     * 获取Netty上下文
+     * @return
+     */
+    ChannelHandlerContext getNettyCtx();
+
+    /**
      * 设置返回对象
      */
     void setResponse(Object response);
@@ -116,5 +122,7 @@ public interface IContext {
     /**
      * 执行写回接收回调函数
      */
-    void invokeCompletedCallBack(Consumer<IContext> consumer);
+    void invokeCompletedCallBack();
+
+    void completed();
 }

@@ -107,6 +107,11 @@ public class BaseContext implements IContext {
     }
 
     @Override
+    public ChannelHandlerContext getNettyCtx() {
+        return this.nettyContext;
+    }
+
+    @Override
     public void setResponse(Object response) {
 
     }
@@ -140,9 +145,14 @@ public class BaseContext implements IContext {
     }
 
     @Override
-    public void invokeCompletedCallBack(Consumer<IContext> consumer) {
+    public void invokeCompletedCallBack() {
         if(completedCallBacks != null){
             completedCallBacks.forEach(callBack -> callBack.accept(this));
         }
+    }
+
+    @Override
+    public void completed() {
+        status = IContext.COMPLETED;
     }
 }
