@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import com.study.common.constants.BasicConst;
 import com.study.common.enums.ResponseCode;
+import com.study.core.context.GatewayContext;
 import com.study.core.context.IContext;
 import com.study.core.response.GatewayResponse;
 import io.netty.buffer.ByteBuf;
@@ -73,10 +74,13 @@ public class ResponseHelper {
 		
 		//	释放资源
 		context.releaseRequest();
-		
+
+		GatewayContext gatewayContext = (GatewayContext) context;
+		GatewayResponse gatewayResponse = gatewayContext.getGatewayResponse();
+
 		if(context.isWritten()) {
 			//	1：第一步构建响应对象，并写回数据
-			FullHttpResponse httpResponse = ResponseHelper.getHttpResponse(context, (GatewayResponse)context.getResponse());
+			FullHttpResponse httpResponse = ResponseHelper.getHttpResponse(context, gatewayResponse);
 			if(!context.isKeepAlive()) {
 				context.getNettyCtx()
 					.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);

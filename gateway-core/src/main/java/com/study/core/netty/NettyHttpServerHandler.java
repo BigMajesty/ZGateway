@@ -25,6 +25,7 @@ public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         FullHttpRequest request = (FullHttpRequest) msg;
         HttpRequestWrapper httpRequestWrapper = new HttpRequestWrapper();
+        httpRequestWrapper.setCtx(ctx);
         httpRequestWrapper.setRequest(request);
         nettyProcessor.process(httpRequestWrapper);
     }

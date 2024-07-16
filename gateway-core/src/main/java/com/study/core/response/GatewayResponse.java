@@ -90,8 +90,6 @@ public class GatewayResponse {
 
     /**
      * 返回一个Json类型的响应信息，成功时使用
-     * @param code
-     * @param args
      * @return
      */
     public static GatewayResponse buildGatewayResponse(Object data){

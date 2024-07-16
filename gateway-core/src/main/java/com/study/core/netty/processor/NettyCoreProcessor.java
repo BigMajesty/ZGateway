@@ -65,6 +65,10 @@ public class NettyCoreProcessor implements NettyProcessor {
         ReferenceCountUtil.release(request);
     }
 
+    /**
+     * 路由函数，用于请求转发
+     * @param gatewayContext
+     */
     private void route(GatewayContext gatewayContext) {
         Request request = gatewayContext.getGatewayRequest().build();
         CompletableFuture<Response> responseCompletableFuture = AsyncHttpHelper.getInstance().executeRequest(request);
@@ -93,6 +97,7 @@ public class NettyCoreProcessor implements NettyProcessor {
                         ResponseCode.HTTP_RESPONSE_ERROR));
                 }
             }else{
+
                 gatewayContext.setGatewayResponse(GatewayResponse.buildGatewayResponse(response));
             }
         } catch (Exception e) {
@@ -100,6 +105,7 @@ public class NettyCoreProcessor implements NettyProcessor {
             log.error("complete error", e);
         } finally {
             gatewayContext.setWritten();
+
             ResponseHelper.writeResponse(gatewayContext);
         }
     }
