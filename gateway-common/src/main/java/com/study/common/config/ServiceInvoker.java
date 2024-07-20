@@ -9,7 +9,11 @@ public interface ServiceInvoker {
 	 * 获取真正的服务调用的全路径
 	 */
 	String getInvokerPath();
-	
+
+	/**
+	 * 设置服务调用全路径
+	 * @param invokerPath
+	 */
 	void setInvokerPath(String invokerPath);
 	
 	/**

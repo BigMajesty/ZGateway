@@ -70,7 +70,9 @@ public class NettyCoreProcessor implements NettyProcessor {
      * @param gatewayContext
      */
     private void route(GatewayContext gatewayContext) {
+        //关键步骤，这里会将原路径中的ip和port设置成目标服务的（临时手动输入的）
         Request request = gatewayContext.getGatewayRequest().build();
+        //请求发送
         CompletableFuture<Response> responseCompletableFuture = AsyncHttpHelper.getInstance().executeRequest(request);
         boolean whenComplete = ConfigLoader.getConfig().isWhenComplete();
         if (whenComplete) {
@@ -88,6 +90,7 @@ public class NettyCoreProcessor implements NettyProcessor {
         gatewayContext.releaseRequest();
         String url = request.getUrl();
         try {
+            //报错
             if (Objects.nonNull(throwable)) {
                 if (throwable instanceof TimeoutException) {
                     log.warn("complete time out {}", url);
@@ -96,8 +99,7 @@ public class NettyCoreProcessor implements NettyProcessor {
                     gatewayContext.setThrowable(new ConnectException(throwable, gatewayContext.getUniqueId(), url,
                         ResponseCode.HTTP_RESPONSE_ERROR));
                 }
-            }else{
-
+            }else{ //正常返回
                 gatewayContext.setGatewayResponse(GatewayResponse.buildGatewayResponse(response));
             }
         } catch (Exception e) {

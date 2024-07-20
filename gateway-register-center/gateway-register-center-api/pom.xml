@@ -3,25 +3,29 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.study</groupId>
-        <artifactId>ZGateway</artifactId>
+        <artifactId>gateway-register-center</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>gateway-register-center</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>gateway-register-center-api</artifactId>
+    <packaging>jar</packaging>
 
-    <name>gateway-register-center</name>
+    <name>gateway-register-center-api</name>
     <url>http://maven.apache.org</url>
-    <modules>
-        <module>gateway-register-center-api</module>
-        <module>gateway-register-center-nacos-impl</module>
-    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+
+        <!--common-->
+        <dependency>
+            <groupId>com.study</groupId>
+            <artifactId>gateway-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
