@@ -39,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
  * @Version
  */
 @Slf4j
-@Component
 public class SpringMVCClientRegisterManager extends AbstractClientRegisterManager
     implements ApplicationListener<ApplicationEvent>, ApplicationContextAware {
 
@@ -50,7 +49,7 @@ public class SpringMVCClientRegisterManager extends AbstractClientRegisterManage
 
     private Set<Object> set = new HashSet<>();
 
-    protected SpringMVCClientRegisterManager(ApiProperties apiProperties) {
+    public SpringMVCClientRegisterManager(ApiProperties apiProperties) {
         super(apiProperties);
     }
 

@@ -16,7 +16,7 @@ public class Config {
     //服务名
     private String applicationName = "api-gateway";
     //注册地址
-    private String registryAddress = "127.0.0.1:8848";
+    private String registryAddress = "192.168.80.1:8848";
     //环境
     private String env = "dev";
 

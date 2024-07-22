@@ -1,6 +1,7 @@
 package com.study.core;
 
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import com.study.common.config.DynamicConfigManager;
@@ -10,6 +11,7 @@ import com.study.common.constants.BasicConst;
 import com.study.common.utils.JSONUtil;
 import com.study.common.utils.NetUtils;
 import com.study.common.utils.TimeUtil;
+import com.study.gateway.config.center.api.IConfigCenter;
 import com.study.gateway.register.center.api.IRegisterCenter;
 import com.study.gateway.register.center.api.IRegisterCenterListener;
 
@@ -29,7 +31,16 @@ public class Bootstrap
         System.out.println(config.getPort());
 
         //插件初始化
+
         //配置中心初始化，连接配置中心，监听配置的新增，修改，删除
+        ServiceLoader<IConfigCenter> serviceLoader = ServiceLoader.load(IConfigCenter.class);
+        IConfigCenter configCenter = serviceLoader.findFirst().orElseThrow(() -> {
+            log.error("not found ConfigCenter impl");
+            return new RuntimeException("not found ConfigCenter impl");
+        });
+        configCenter.init(config.getRegistryAddress(), config.getEnv());
+        configCenter.subscribeRulesChange(ruleList -> DynamicConfigManager.getInstance().putAllRule(ruleList));
+
         //启动容器
         Container container = new Container(config);
         container.start();
@@ -42,12 +53,19 @@ public class Bootstrap
             @Override
             public void run() {
                 registerCenter.deregister(buildGatewayServiceDefinition(config), buildGatewayServiceInstance(config));
+                container.shutdown();
             }
         });
     }
 
     private static IRegisterCenter registerAndSubcribe(Config config) {
-        final IRegisterCenter registerCenter = null;
+        ServiceLoader<IRegisterCenter> serviceLoader = ServiceLoader.load(IRegisterCenter.class);
+
+        final IRegisterCenter registerCenter = serviceLoader.findFirst().orElseThrow(() -> {
+            log.error("not found RegisterCenter impl");
+            return new RuntimeException("not found RegisterCenter impl");
+        });
+        registerCenter.init(config.getRegistryAddress(), config.getEnv());
         // 构造网关服务定义和服务实例
         ServiceDefinition serviceDefinition = buildGatewayServiceDefinition(config);
         ServiceInstance serviceInstance = buildGatewayServiceInstance(config);
@@ -60,7 +78,7 @@ public class Bootstrap
                 log.info("refresh service and instance {} {}", serviceDefinition.getUniqueId(),
                     JSONUtil.toJSONString(serviceInstanceSet));
                 DynamicConfigManager dynamicConfigManager = DynamicConfigManager.getInstance();
-                dynamicConfigManager.addServiceInstance(serviceInstance.getUniqueId(), serviceInstanceSet);
+                dynamicConfigManager.addServiceInstance(serviceDefinition.getUniqueId(), serviceInstanceSet);
             }
         });
         return registerCenter;

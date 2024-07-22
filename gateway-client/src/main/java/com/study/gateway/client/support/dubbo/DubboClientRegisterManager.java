@@ -37,7 +37,7 @@ public class DubboClientRegisterManager extends AbstractClientRegisterManager
     private Set<Object> set = new HashSet<>();
 
 
-    protected DubboClientRegisterManager(ApiProperties apiProperties) {
+    public DubboClientRegisterManager(ApiProperties apiProperties) {
         super(apiProperties);
     }
 

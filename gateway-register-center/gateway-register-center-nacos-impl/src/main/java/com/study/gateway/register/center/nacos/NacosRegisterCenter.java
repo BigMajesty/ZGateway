@@ -4,6 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson2.JSON;
@@ -18,6 +22,7 @@ import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.Service;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
+import com.alibaba.nacos.common.executor.NameThreadFactory;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.study.common.config.ServiceDefinition;
 import com.study.common.config.ServiceInstance;
@@ -49,7 +54,7 @@ public class NacosRegisterCenter implements IRegisterCenter {
     private NamingMaintainService namingMaintainService;
 
     // 监听器列表
-    private List<IRegisterCenterListener> registerCenterListenerList;
+    private List<IRegisterCenterListener> registerCenterListenerList = new CopyOnWriteArrayList<>();;
 
     @Override
     public void init(String registerAddress, String env) {
@@ -75,7 +80,7 @@ public class NacosRegisterCenter implements IRegisterCenter {
             nacosInstance.setPort(serviceInstance.getPort());
             nacosInstance.setMetadata(Map.of(GatewayConst.META_DATA_KEY, JSONUtil.toJSONString(serviceInstance)));
             // 注册
-            namingService.registerInstance(serviceDefinition.getUniqueId(), env, nacosInstance);
+            namingService.registerInstance(serviceDefinition.getServiceId(), env, nacosInstance);
             // 更新服务定义
             namingMaintainService.updateService(serviceDefinition.getServiceId(), env, 0,
                 Map.of(GatewayConst.META_DATA_KEY, JSONUtil.toJSONString(serviceDefinition)));
@@ -88,8 +93,10 @@ public class NacosRegisterCenter implements IRegisterCenter {
     @Override
     public void deregister(ServiceDefinition serviceDefinition, ServiceInstance serviceInstance) {
         try {
-            namingService.deregisterInstance(serviceDefinition.getUniqueId(), env, serviceInstance.getIp(),
-                serviceInstance.getPort());
+//            namingService.deregisterInstance(serviceDefinition.getUniqueId(), env, serviceInstance.getIp(),
+//                serviceInstance.getPort());
+            namingService.registerInstance(serviceDefinition.getServiceId(),
+                    env, serviceInstance.getIp(), serviceInstance.getPort());//TODO ???
         } catch (NacosException e) {
             throw new RuntimeException(e);
         }
@@ -99,6 +106,12 @@ public class NacosRegisterCenter implements IRegisterCenter {
     public void subscribeAllServices(IRegisterCenterListener registerCenterListener) {
         registerCenterListenerList.add(registerCenterListener);
         doSubscribeAllServices();
+
+        //可能有新服务加入，所以需要有一个定时任务来检查
+        ScheduledExecutorService scheduledThreadPool = Executors
+                .newScheduledThreadPool(1, new NameThreadFactory("doSubscribeAllServices"));
+        scheduledThreadPool.scheduleWithFixedDelay(() -> doSubscribeAllServices(),
+                10, 3, TimeUnit.SECONDS);
     }
 
     private void doSubscribeAllServices() {
@@ -111,15 +124,19 @@ public class NacosRegisterCenter implements IRegisterCenter {
             int pageNo = 1;
             int pageSize = 100;
 
-            EventListener eventListener = new NacosRegisterListener();
+
             List<String> serviceList = namingService.getServicesOfServer(pageNo, pageSize, env).getData();
             while (CollectionUtils.isNotEmpty(serviceList)) {
+                log.info("service list size {}", serviceList.size());
                 for (String service : serviceList) {
                     if (subScribeServiceSet.contains(service)) {
                         continue;
                     }
-                    namingService.subscribe(service, eventListener);
-                    log.info("subscribe is {} {}", service, env);
+                    //nacos事件监听器
+                    EventListener eventListener = new NacosRegisterListener();
+                    eventListener.onEvent(new NamingEvent(service, null));
+                    namingService.subscribe(service, env, eventListener);
+                    log.info("subscribe {} {}", service, env);
                 }
                 serviceList = namingService.getServicesOfServer(++pageNo, pageSize, env).getData();
             }

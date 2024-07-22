@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 /**
  * 必须再服务的方法上强制声明
  */
-@Target(ElementType.TYPE)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ApiInvoker {

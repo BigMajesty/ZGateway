@@ -6,7 +6,6 @@ import com.study.common.config.ServiceDefinition;
 import com.study.common.config.ServiceInvoker;
 import com.study.common.constants.BasicConst;
 import com.study.gateway.client.support.dubbo.DubboConstants;
-import com.sun.tools.javac.util.DefinedBy;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -44,7 +43,7 @@ public class ApiAnnotationScanner {
      */
     public ServiceDefinition scanner(Object bean, Object ...args){
         Class<?> aClass = bean.getClass();
-        if(aClass.isAnnotationPresent(ApiService.class)){
+        if(!aClass.isAnnotationPresent(ApiService.class)){
             return null;
         }
         ApiService apiService = aClass.getAnnotation(ApiService.class);
@@ -56,10 +55,10 @@ public class ApiAnnotationScanner {
         Map<String, ServiceInvoker> invokerMap = new HashMap<>();
 
         Method[] methods = aClass.getMethods();
-        if(methods != null){
+        if(methods != null && methods.length > 0){
             for(Method method : methods){
                 ApiInvoker apiInvoker = method.getAnnotation(ApiInvoker.class);
-                if(apiInvoker != null){
+                if(apiInvoker == null){
                     continue;
                 }
                 String path = apiInvoker.path();

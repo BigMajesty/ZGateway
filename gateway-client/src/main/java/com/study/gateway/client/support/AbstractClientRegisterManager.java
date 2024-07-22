@@ -30,6 +30,7 @@ public abstract class AbstractClientRegisterManager {
             log.error("not found RegisterCenter impl ");
             return new IllegalStateException("Not found RegisterCenter impl found");
         });
+        registerCenter.init(apiProperties.getRegisterAddress(), apiProperties.getEnv());
     }
 
     protected void register(ServiceDefinition serviceDefinition, ServiceInstance serviceInstance){
