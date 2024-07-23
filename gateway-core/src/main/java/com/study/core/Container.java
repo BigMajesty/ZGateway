@@ -39,7 +39,7 @@ public class Container implements LifeCycle{
 
     @Override
     public void start() {
-//        nettyHttpClient.start();
+        nettyHttpClient.start();
         nettyHttpServer.start();
         log.info("api gateway started");
     }

@@ -1,11 +1,12 @@
 package com.study.common.rule;
 
-import lombok.Data;
-
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import lombok.Data;
 
 /**
  * @ClassName Rule
@@ -37,18 +38,36 @@ public class Rule implements Comparable<Rule>, Serializable {
      */
     private Integer order;
 
+    /**
+     * 后端服务ID
+     */
+    private String serviceId;
+
+    /**
+     * 请求前缀
+     */
+    private String prefix;
+
+    /**
+     * 路径集合
+     */
+    private List<String> paths;
+
     private Set<FilterConfig> filterConfigSet = new HashSet<>();
 
     public Rule() {
         super();
     }
 
-    public Rule(String id, String name, String protocol, Integer order,Set<FilterConfig> filterConfigSet) {
-        super();
+    public Rule(String id, String name, String protocol, Integer order, String serviceId, String prefix,
+        List<String> paths, Set<FilterConfig> filterConfigSet) {
         this.id = id;
         this.name = name;
         this.protocol = protocol;
         this.order = order;
+        this.serviceId = serviceId;
+        this.prefix = prefix;
+        this.paths = paths;
         this.filterConfigSet = filterConfigSet;
     }
 
@@ -118,6 +137,70 @@ public class Rule implements Comparable<Rule>, Serializable {
             }
         }
         return null;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public Integer getOrder() {
+        return order;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
+    }
+
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public List<String> getPaths() {
+        return paths;
+    }
+
+    public void setPaths(List<String> paths) {
+        this.paths = paths;
+    }
+
+    public Set<FilterConfig> getFilterConfigSet() {
+        return filterConfigSet;
+    }
+
+    public void setFilterConfigSet(Set<FilterConfig> filterConfigSet) {
+        this.filterConfigSet = filterConfigSet;
     }
 
     /**

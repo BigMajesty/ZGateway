@@ -2,12 +2,8 @@ package com.study.common.config;
 
 import com.study.common.rule.Rule;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * 动态服务缓存配置管理类
@@ -22,6 +18,13 @@ public class DynamicConfigManager {
 
 	//	规则集合
 	private ConcurrentHashMap<String /* ruleId */ , Rule>  ruleMap = new ConcurrentHashMap<>();
+
+	//路径为key，规则为value集合
+	private ConcurrentHashMap<String  , Rule> pathRuleMap = new ConcurrentHashMap<>();
+
+	//规则serviceId为key，规则结合为值
+	private ConcurrentHashMap<String  , List<Rule>>  serviceRuleMap = new ConcurrentHashMap<>();
+
 	
 	private DynamicConfigManager() {
 	}
@@ -107,13 +110,59 @@ public class DynamicConfigManager {
 	}
 
 	public void putAllRule(List<Rule> ruleList) {
-		Map<String, Rule> map = ruleList.stream()
-				.collect(Collectors.toMap(Rule::getId, r -> r));
-		ruleMap = new ConcurrentHashMap<>(map);
+		ConcurrentHashMap<String,Rule> newRuleMap = new ConcurrentHashMap<>();
+		ConcurrentHashMap<String,Rule> newPathRuleMap = new ConcurrentHashMap<>();
+		ConcurrentHashMap<String,List<Rule>> newServiceRuleMap = new ConcurrentHashMap<>();
+
+		for(Rule rule : ruleList) {
+			newRuleMap.put(rule.getId(), rule);
+			List<Rule> rules = newServiceRuleMap.get(rule.getServiceId());
+			if(rules == null) {
+				rules = new ArrayList<>();
+			}
+			rules.add(rule);
+			newServiceRuleMap.put(rule.getServiceId(), rules);
+			List<String> paths = rule.getPaths();
+			for(String path : paths) {
+				String key = rule.getServiceId()+"."+path;
+				newPathRuleMap.put(key, rule);
+			}
+		}
+
+		ruleMap = newRuleMap;
+		pathRuleMap = newPathRuleMap;
+		serviceRuleMap = newServiceRuleMap;
+
+//		Map<String, Rule> map = ruleList.stream()
+//				.collect(Collectors.toMap(Rule::getId, r -> r));
+//		ruleMap = new ConcurrentHashMap<>(map);
 	}
-	
+
+	/**
+	 * 根据Rule的Id获取
+	 * @param ruleId
+	 * @return
+	 */
 	public Rule getRule(String ruleId) {
 		return ruleMap.get(ruleId);
+	}
+
+	/**
+	 * 根据path获取rule
+	 * @param path
+	 * @return
+	 */
+	public Rule getRuleByPath(String path) {
+		return pathRuleMap.get(path);
+	}
+
+	/**
+	 * 根据serviceId获取Rules
+	 * @param serviceId
+	 * @return
+	 */
+	public List<Rule> getRuleByServiceId(String serviceId) {
+		return serviceRuleMap.get(serviceId);
 	}
 	
 	public void removeRule(String ruleId) {

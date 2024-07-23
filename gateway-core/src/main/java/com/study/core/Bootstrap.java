@@ -72,13 +72,15 @@ public class Bootstrap
         // 注册
         registerCenter.register(serviceDefinition, serviceInstance);
         // 订阅
-        registerCenter.subscribeAllServices(new IRegisterCenterListener() {
+        registerCenter.subscribeAllServices(new IRegisterCenterListener() {//匿名内部类实现IRegisterCenterListener接口，处理服务更新事件
             @Override
             public void onChange(ServiceDefinition serviceDefinition, Set<ServiceInstance> serviceInstanceSet) {
                 log.info("refresh service and instance {} {}", serviceDefinition.getUniqueId(),
                     JSONUtil.toJSONString(serviceInstanceSet));
                 DynamicConfigManager dynamicConfigManager = DynamicConfigManager.getInstance();
+                //这里之所以是添加，而不是更新，是因为触发该方法时，是将每个新的服务传过来，所以只需要添加就行了
                 dynamicConfigManager.addServiceInstance(serviceDefinition.getUniqueId(), serviceInstanceSet);
+                dynamicConfigManager.putServiceDefinition(serviceDefinition.getUniqueId(),serviceDefinition);
             }
         });
         return registerCenter;

@@ -5,6 +5,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
 import com.study.common.exception.BaseException;
+import com.study.core.filter.FilterFactory;
+import com.study.core.filter.GatewayFilterChainFactory;
 import com.study.core.helper.ResponseHelper;
 import com.study.core.response.GatewayResponse;
 import io.netty.channel.ChannelFutureListener;
@@ -35,13 +37,21 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class NettyCoreProcessor implements NettyProcessor {
+
+    private FilterFactory filterFactory = GatewayFilterChainFactory.getInstance();
+
     @Override
     public void process(HttpRequestWrapper httpRequestWrapper) {
         ChannelHandlerContext ctx = httpRequestWrapper.getCtx();
         FullHttpRequest request = httpRequestWrapper.getRequest();
         try {
             GatewayContext gatewayContext = RequestHelper.doContext(request, ctx);
-            route(gatewayContext);
+            //执行过滤器逻辑
+            filterFactory.buildFilterChain(gatewayContext).doFilter(gatewayContext);
+
+            //路由
+//            route(gatewayContext);
+
         } catch (BaseException e) {
             log.error("process error {} {}",e.getCode().getCode(),e.getCode().getMessage());
             FullHttpResponse httpResponse = ResponseHelper.getHttpResponse(e.getCode());
@@ -65,50 +75,50 @@ public class NettyCoreProcessor implements NettyProcessor {
         ReferenceCountUtil.release(request);
     }
 
-    /**
-     * 路由函数，用于请求转发
-     * @param gatewayContext
-     */
-    private void route(GatewayContext gatewayContext) {
-        //关键步骤，这里会将原路径中的ip和port设置成目标服务的（临时手动输入的）
-        Request request = gatewayContext.getGatewayRequest().build();
-        //请求发送
-        CompletableFuture<Response> responseCompletableFuture = AsyncHttpHelper.getInstance().executeRequest(request);
-        boolean whenComplete = ConfigLoader.getConfig().isWhenComplete();
-        if (whenComplete) {
-            responseCompletableFuture.whenComplete((response, throwable) -> {
-                complete(request, response, throwable, gatewayContext);
-            });
-        } else {
-            responseCompletableFuture.whenCompleteAsync((response, throwable) -> {
-                complete(request, response, throwable, gatewayContext);
-            });
-        }
-    }
-
-    private void complete(Request request, Response response, Throwable throwable, GatewayContext gatewayContext) {
-        gatewayContext.releaseRequest();
-        String url = request.getUrl();
-        try {
-            //报错
-            if (Objects.nonNull(throwable)) {
-                if (throwable instanceof TimeoutException) {
-                    log.warn("complete time out {}", url);
-                    gatewayContext.setThrowable(new ResponseException(ResponseCode.REQUEST_TIMEOUT));
-                } else {
-                    gatewayContext.setThrowable(new ConnectException(throwable, gatewayContext.getUniqueId(), url,
-                        ResponseCode.HTTP_RESPONSE_ERROR));
-                }
-            }else{ //正常返回
-                gatewayContext.setGatewayResponse(GatewayResponse.buildGatewayResponse(response));
-            }
-        } catch (Exception e) {
-            gatewayContext.setThrowable(new ResponseException(ResponseCode.INTERNAL_ERROR));
-            log.error("complete error", e);
-        } finally {
-            gatewayContext.setWritten();
-
-            ResponseHelper.writeResponse(gatewayContext);
-        }
-    }
+//    /**
+//     * 路由函数，用于请求转发
+//     * @param gatewayContext
+//     */
+//    private void route(GatewayContext gatewayContext) {
+//        //关键步骤，这里会将原路径中的ip和port设置成目标服务的（临时手动输入的）
+//        Request request = gatewayContext.getGatewayRequest().build();
+//        //请求发送
+//        CompletableFuture<Response> responseCompletableFuture = AsyncHttpHelper.getInstance().executeRequest(request);
+//        boolean whenComplete = ConfigLoader.getConfig().isWhenComplete();
+//        if (whenComplete) {
+//            responseCompletableFuture.whenComplete((response, throwable) -> {
+//                complete(request, response, throwable, gatewayContext);
+//            });
+//        } else {
+//            responseCompletableFuture.whenCompleteAsync((response, throwable) -> {
+//                complete(request, response, throwable, gatewayContext);
+//            });
+//        }
+//    }
+//
+//    private void complete(Request request, Response response, Throwable throwable, GatewayContext gatewayContext) {
+//        gatewayContext.releaseRequest();
+//        String url = request.getUrl();
+//        try {
+//            //报错
+//            if (Objects.nonNull(throwable)) {
+//                if (throwable instanceof TimeoutException) {
+//                    log.warn("complete time out {}", url);
+//                    gatewayContext.setThrowable(new ResponseException(ResponseCode.REQUEST_TIMEOUT));
+//                } else {
+//                    gatewayContext.setThrowable(new ConnectException(throwable, gatewayContext.getUniqueId(), url,
+//                        ResponseCode.HTTP_RESPONSE_ERROR));
+//                }
+//            }else{ //正常返回
+//                gatewayContext.setGatewayResponse(GatewayResponse.buildGatewayResponse(response));
+//            }
+//        } catch (Exception e) {
+//            gatewayContext.setThrowable(new ResponseException(ResponseCode.INTERNAL_ERROR));
+//            log.error("complete error", e);
+//        } finally {
+//            gatewayContext.setWritten();
+//
+//            ResponseHelper.writeResponse(gatewayContext);
+//        }
+//    }
 }
