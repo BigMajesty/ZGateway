@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -23,16 +24,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RoundRobinLoadBalanceRule implements IGatewayLoadBalanceRule{
 
     //轮询算法需要获得实例当前的位置
-    private final AtomicInteger position;
+    private final AtomicInteger position = new AtomicInteger(1);
 
     private final String serviceId;
 
-    private Set<ServiceInstance> serviceInstanceSet;
+    private static ConcurrentHashMap<String,RoundRobinLoadBalanceRule> serviceMap = new ConcurrentHashMap<>();
 
-    public RoundRobinLoadBalanceRule(AtomicInteger position, String serviceId) {
-        this.position = position;
+    public RoundRobinLoadBalanceRule(String serviceId) {
         this.serviceId = serviceId;
-        this.serviceInstanceSet = DynamicConfigManager.getInstance().getServiceInstanceByUniqueId(serviceId);
+    }
+
+    public static RoundRobinLoadBalanceRule getInstance(String serviceId) {
+        RoundRobinLoadBalanceRule roundRobinLoadBalanceRule = serviceMap.get(serviceId);
+        if(roundRobinLoadBalanceRule == null) {
+            roundRobinLoadBalanceRule = new RoundRobinLoadBalanceRule(serviceId);
+            serviceMap.put(serviceId, roundRobinLoadBalanceRule);
+        }
+        return roundRobinLoadBalanceRule;
     }
 
     @Override
@@ -42,6 +50,7 @@ public class RoundRobinLoadBalanceRule implements IGatewayLoadBalanceRule{
 
     @Override
     public ServiceInstance choose(String serviceId) {
+        Set<ServiceInstance> serviceInstanceSet =  DynamicConfigManager.getInstance().getServiceInstanceByUniqueId(serviceId);
         //由于构造方法中获取set的速度较慢，这里作双重检查
         if(serviceInstanceSet.isEmpty()) {
             serviceInstanceSet = DynamicConfigManager.getInstance().getServiceInstanceByUniqueId(serviceId);

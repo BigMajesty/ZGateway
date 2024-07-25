@@ -55,6 +55,12 @@ public class Rule implements Comparable<Rule>, Serializable {
 
     private Set<FilterConfig> filterConfigSet = new HashSet<>();
 
+    //重试
+    private RetryConfig retryConfig = new RetryConfig();
+
+    //限流
+    private Set<FlowCtlConfig> flowCtlConfig = new HashSet<>();
+
     public Rule() {
         super();
     }
@@ -114,6 +120,80 @@ public class Rule implements Comparable<Rule>, Serializable {
             return Objects.hashCode(id);
         }
 
+    }
+
+    public static class RetryConfig{
+        private int times;
+
+        public int getTimes() {
+            return times;
+        }
+
+        public void setTimes(int times) {
+            this.times = times;
+        }
+    }
+
+    public static class FlowCtlConfig{
+        //限流类型-path、ip、服务等
+        private String type;
+
+        //限流对象的值
+        private String value;
+
+        //限流模式-单机、分布式
+        private String model;
+
+        //限流规则
+        private String config;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getModel() {
+            return model;
+        }
+
+        public void setModel(String model) {
+            this.model = model;
+        }
+
+        public String getConfig() {
+            return config;
+        }
+
+        public void setConfig(String config) {
+            this.config = config;
+        }
+    }
+
+    public Set<FlowCtlConfig> getFlowCtlConfig() {
+        return flowCtlConfig;
+    }
+
+    public void setFlowCtlConfig(Set<FlowCtlConfig> flowCtlConfig) {
+        this.flowCtlConfig = flowCtlConfig;
+    }
+
+    public RetryConfig getRetryConfig() {
+        return retryConfig;
+    }
+
+    public void setRetryConfig(RetryConfig retryConfig) {
+        this.retryConfig = retryConfig;
     }
 
     /**

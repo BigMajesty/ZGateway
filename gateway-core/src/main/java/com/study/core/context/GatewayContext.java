@@ -1,6 +1,5 @@
 package com.study.core.context;
 
-import afu.org.checkerframework.checker.oigj.qual.O;
 import com.study.common.rule.Rule;
 import com.study.common.utils.AssertUtil;
 import com.study.core.request.GatewayRequest;
@@ -21,12 +20,14 @@ public class GatewayContext extends BaseContext{
     public GatewayRequest gatewayRequest;
     public GatewayResponse gatewayResponse;
     public Rule rule;
+    private int currentRetryTimes;
 
     public GatewayContext(String protocol, ChannelHandlerContext nettyContext, boolean keepAlive,
-        GatewayRequest gatewayRequest, Rule rule) {
+        GatewayRequest gatewayRequest, Rule rule, int currentRetryTimes) {
         super(protocol, nettyContext, keepAlive);
         this.gatewayRequest = gatewayRequest;
         this.rule = rule;
+        this.currentRetryTimes = currentRetryTimes;
     }
 
     //构建者模式
@@ -71,7 +72,7 @@ public class GatewayContext extends BaseContext{
             AssertUtil.notNull(nettyContext,"nettyContext不能为空");
             AssertUtil.notNull(gatewayRequest,"gatewayRequest不能为空");
             AssertUtil.notNull(rule,"rule不能为空");
-            return new GatewayContext(protocol,nettyContext,keepAlive,gatewayRequest,rule);
+            return new GatewayContext(protocol, nettyContext, keepAlive, gatewayRequest, rule, 0);// 开始默认0次重试
         }
     }
 
@@ -97,6 +98,14 @@ public class GatewayContext extends BaseContext{
 
     public void setRule(Rule rule) {
         this.rule = rule;
+    }
+
+    public int getCurrentRetryTimes() {
+        return currentRetryTimes;
+    }
+
+    public void setCurrentRetryTimes(int currentRetryTimes) {
+        this.currentRetryTimes = currentRetryTimes;
     }
 
     /**

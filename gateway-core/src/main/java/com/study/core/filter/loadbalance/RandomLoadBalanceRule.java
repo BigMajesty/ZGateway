@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -24,13 +25,20 @@ public class RandomLoadBalanceRule implements IGatewayLoadBalanceRule {
 
     private final String serviceId;
 
-    private Set<ServiceInstance> serviceInstanceSet;
+    private static ConcurrentHashMap<String,RandomLoadBalanceRule> serviceMap = new ConcurrentHashMap<>();
+
+    public static RandomLoadBalanceRule getInstance(String serviceId) {
+        RandomLoadBalanceRule randomLoadBalanceRule = serviceMap.get(serviceId);
+        if(randomLoadBalanceRule == null) {
+            randomLoadBalanceRule = new RandomLoadBalanceRule(serviceId);
+            serviceMap.put(serviceId, randomLoadBalanceRule);
+        }
+        return randomLoadBalanceRule;
+    }
 
     public RandomLoadBalanceRule(String serviceId) {
         this.serviceId = serviceId;
-        this.serviceInstanceSet = DynamicConfigManager.getInstance().getServiceInstanceByUniqueId(serviceId);
     }
-
 
     @Override
     public ServiceInstance choose(GatewayContext context) {
@@ -40,6 +48,7 @@ public class RandomLoadBalanceRule implements IGatewayLoadBalanceRule {
 
     @Override
     public ServiceInstance choose(String serviceId) {
+        Set<ServiceInstance> serviceInstanceSet =  DynamicConfigManager.getInstance().getServiceInstanceByUniqueId(serviceId);
         //由于构造方法中获取set的速度较慢，这里作双重检查
         if(serviceInstanceSet == null || serviceInstanceSet.isEmpty()) {
             serviceInstanceSet = DynamicConfigManager.getInstance().getServiceInstanceByUniqueId(serviceId);

@@ -35,6 +35,10 @@ public class LoadBalanceFilter implements IFilter {
         String serviceId = context.getUniqueId();
         IGatewayLoadBalanceRule loadBalanceRule = getLoadBalanceRule(context);
         ServiceInstance serviceInstance = loadBalanceRule.choose(serviceId);
+
+        //测试负载均衡算法
+        System.out.println("IP为"+serviceInstance.getIp()+",端口号："+serviceInstance.getPort());
+
         GatewayRequest gatewayRequest = context.getGatewayRequest();
         if(serviceInstance != null && gatewayRequest != null) {
             String host = serviceInstance.getIp()+":"+ serviceInstance.getPort();
@@ -71,14 +75,14 @@ public class LoadBalanceFilter implements IFilter {
                     }
                     switch (strategy) {
                         case FilterConst.LOAD_BALANCE_STRATEGY_RANDOM:
-                            gatewayLoadBalanceRule = new RandomLoadBalanceRule(context.getUniqueId());
+                            gatewayLoadBalanceRule = RandomLoadBalanceRule.getInstance(configRule.getServiceId());
                             break;
                         case FilterConst.LOAD_BALANCE_STRATEGY_ROUND_ROBIN:
-                            gatewayLoadBalanceRule = new RoundRobinLoadBalanceRule(new AtomicInteger(1),context.getUniqueId());
+                            gatewayLoadBalanceRule = RoundRobinLoadBalanceRule.getInstance(configRule.getServiceId());
                             break;
                         default:
                             log.warn("No loadBalance strategy for service:{}", strategy);
-                            gatewayLoadBalanceRule = new RandomLoadBalanceRule(context.getUniqueId());
+                            gatewayLoadBalanceRule = RandomLoadBalanceRule.getInstance(configRule.getServiceId());
                             break;
                     }
                 }
