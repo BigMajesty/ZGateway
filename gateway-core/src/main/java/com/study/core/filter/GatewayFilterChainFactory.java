@@ -2,6 +2,7 @@ package com.study.core.filter;
 
 import java.util.*;
 
+import com.study.common.constants.FilterConst;
 import com.study.core.filter.router.RouterFilter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -57,6 +58,13 @@ public class GatewayFilterChainFactory implements FilterFactory {
     public GatewayFilterChain buildFilterChain(GatewayContext context) throws Exception {
         GatewayFilterChain gatewayFilterChain = new GatewayFilterChain();
         List<IFilter> filters = new ArrayList<IFilter>();
+        //这里默认手动添加灰度过滤器
+        filters.add(getFilterInfo(FilterConst.GRAY_FILTER_ID));
+        
+        //手动加入监控过滤器 TODO 暂时不做
+//        filters.add(getFilterInfo(FilterConst.MONITOR_FILTER_ID));
+//        filters.add(getFilterInfo(FilterConst.MONITOR_END_FILTER_ID));
+        
         // 过滤器链条通过Rule，规则来定义
         Rule rule = context.getRule();
         if (rule != null) {

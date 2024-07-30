@@ -1,5 +1,8 @@
 package com.study.common.config;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -36,6 +39,12 @@ public class ServiceInstance implements Serializable {
 	 * 	权重信息
 	 */
 	protected Integer weight;
+	
+	
+	@Getter
+	@Setter
+	private boolean gray;
+	
 	
 	/**
 	 * 	服务注册的时间戳：后面我们做负载均衡，warmup预热

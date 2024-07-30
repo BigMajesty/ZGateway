@@ -1,9 +1,12 @@
 package com.study.common.config;
 
-import com.study.common.rule.Rule;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+
+import com.study.common.rule.Rule;
 
 /**
  * 动态服务缓存配置管理类
@@ -22,7 +25,7 @@ public class DynamicConfigManager {
 	//路径为key，规则为value集合
 	private ConcurrentHashMap<String  , Rule> pathRuleMap = new ConcurrentHashMap<>();
 
-	//规则serviceId为key，规则结合为值
+    // 规则serviceId为key，规则集合为值
 	private ConcurrentHashMap<String  , List<Rule>>  serviceRuleMap = new ConcurrentHashMap<>();
 
 	
@@ -59,9 +62,16 @@ public class DynamicConfigManager {
 	}
 	
 	/***************** 	对服务实例缓存进行操作的系列方法 	***************/
-
-	public Set<ServiceInstance> getServiceInstanceByUniqueId(String uniqueId){
-		return serviceInstanceMap.get(uniqueId);
+    // 扩展方法，灰度
+    public Set<ServiceInstance> getServiceInstanceByUniqueId(String uniqueId, boolean gray) {
+        Set<ServiceInstance> serviceInstances = serviceInstanceMap.get(uniqueId);
+        if (CollectionUtils.isEmpty(serviceInstances)) {
+            return Collections.emptySet();
+        }
+        if (gray) {
+            return serviceInstances.stream().filter(ServiceInstance::isGray).collect(Collectors.toSet());
+        }
+		return serviceInstances;
 	}
 	
 	public void addServiceInstance(String uniqueId, ServiceInstance serviceInstance) {
@@ -124,6 +134,7 @@ public class DynamicConfigManager {
 			newServiceRuleMap.put(rule.getServiceId(), rules);
 			List<String> paths = rule.getPaths();
 			for(String path : paths) {
+                // serviceId.path为key,规则为值
 				String key = rule.getServiceId()+"."+path;
 				newPathRuleMap.put(key, rule);
 			}
@@ -148,10 +159,11 @@ public class DynamicConfigManager {
 	}
 
 	/**
-	 * 根据path获取rule
-	 * @param path
-	 * @return
-	 */
+     * 根据path获取rule（实际key为，serviceId+.+path
+     * 
+     * @param path
+     * @return
+     */
 	public Rule getRuleByPath(String path) {
 		return pathRuleMap.get(path);
 	}

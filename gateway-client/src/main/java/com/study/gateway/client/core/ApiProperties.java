@@ -17,4 +17,7 @@ import org.springframework.stereotype.Component;
 public class ApiProperties {
     private String registerAddress;
     private String env;
+    
+    //是否是灰度服务
+    private boolean gray;
 }

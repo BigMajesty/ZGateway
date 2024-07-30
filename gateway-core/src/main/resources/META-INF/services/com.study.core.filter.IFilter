@@ -1,2 +1,5 @@
 com.study.core.filter.loadbalance.LoadBalanceFilter
 com.study.core.filter.router.RouterFilter
+com.study.core.filter.flowctl.FlowCtlFilter
+com.study.core.filter.auth.UserAuthFilter
+com.study.core.filter.gray.GrayFilter

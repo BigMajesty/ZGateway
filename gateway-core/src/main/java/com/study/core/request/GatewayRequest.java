@@ -11,6 +11,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.util.internal.StringUtil;
+import lombok.Setter;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.RequestBuilder;
 
@@ -140,6 +141,13 @@ public class GatewayRequest implements IGatewayRequest {
      * 构建下游请求时的http构建器
      */
     private final RequestBuilder requestBuilder;
+
+    /**
+     * 用户Id,用于鉴权
+     */
+    @Setter
+    @Getter
+    private long userId;
 
     public GatewayRequest(String uniquedId, Charset charset, String clientIp, String host, String uri, HttpMethod method, String contentType, HttpHeaders headers, FullHttpRequest fullHttpRequest) {
         this.uniqueId = uniquedId;
@@ -295,6 +303,7 @@ public class GatewayRequest implements IGatewayRequest {
     @Override
     public Request build() {
         requestBuilder.setUrl(getFinalUrl());
+        requestBuilder.addHeader("userId",userId);
         return requestBuilder.build();
     }
 }

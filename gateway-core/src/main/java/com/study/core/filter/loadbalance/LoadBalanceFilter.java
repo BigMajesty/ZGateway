@@ -34,7 +34,7 @@ public class LoadBalanceFilter implements IFilter {
     public void doFilter(GatewayContext context) throws Exception {
         String serviceId = context.getUniqueId();
         IGatewayLoadBalanceRule loadBalanceRule = getLoadBalanceRule(context);
-        ServiceInstance serviceInstance = loadBalanceRule.choose(serviceId);
+        ServiceInstance serviceInstance = loadBalanceRule.choose(serviceId,context.isGray());
 
         //测试负载均衡算法
         System.out.println("IP为"+serviceInstance.getIp()+",端口号："+serviceInstance.getPort());

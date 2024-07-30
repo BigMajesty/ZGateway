@@ -5,8 +5,11 @@ import com.study.common.utils.AssertUtil;
 import com.study.core.request.GatewayRequest;
 import com.study.core.response.GatewayResponse;
 
+import io.micrometer.core.instrument.Timer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.ReferenceCountUtil;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @ClassName GatewayContext
@@ -21,6 +24,16 @@ public class GatewayContext extends BaseContext{
     public GatewayResponse gatewayResponse;
     public Rule rule;
     private int currentRetryTimes;
+    
+    //灰度标识
+    @Setter
+    @Getter
+    private boolean gray;
+    
+    //普罗米修斯提供的，帮助采集
+    @Setter
+    @Getter
+    private Timer.Sample timerSample;
 
     public GatewayContext(String protocol, ChannelHandlerContext nettyContext, boolean keepAlive,
         GatewayRequest gatewayRequest, Rule rule, int currentRetryTimes) {

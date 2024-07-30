@@ -107,7 +107,11 @@ public class SpringMVCClientRegisterManager extends AbstractClientRegisterManage
                 serviceInstance.setRegisterTime(TimeUtil.currentTimeMillis());
                 serviceInstance.setVersion(version);
                 serviceInstance.setWeight(GatewayConst.DEFAULT_WEIGHT);
-
+                //灰度
+                if(getApiProperties().isGray()){
+                    serviceInstance.setGray(true);
+                }
+                
                 //注册
                 register(serviceDefinition, serviceInstance);
             }

@@ -1,14 +1,15 @@
 package com.study.core.filter.flowctl;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import com.study.common.constants.FilterConst;
 import com.study.common.rule.Rule;
 import com.study.core.context.GatewayContext;
 import com.study.core.filter.FilterAspect;
 import com.study.core.filter.IFilter;
-import lombok.extern.slf4j.Slf4j;
 
-import java.util.Iterator;
-import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @ClassName FlowCtlFilter
@@ -25,7 +26,8 @@ public class FlowCtlFilter implements IFilter {
     public void doFilter(GatewayContext context) throws Exception {
         Rule rule = context.getRule();
         if(rule != null){
-            Set<Rule.FlowCtlConfig> flowCtlConfigSet = rule.getFlowCtlConfig();
+            IGatewayFlowCtlRule flowCtlRule = null;
+            Set<Rule.FlowCtlConfig> flowCtlConfigSet = rule.getFlowCtlConfigSet();
             Iterator<Rule.FlowCtlConfig> iterator = flowCtlConfigSet.iterator();
             Rule.FlowCtlConfig flowCtlConfig = null;
             while(iterator.hasNext()){
@@ -33,7 +35,16 @@ public class FlowCtlFilter implements IFilter {
                 if(flowCtlConfig == null){
                     continue;
                 }
-
+                String path = context.getGatewayRequest().getPath();
+                if (flowCtlConfig.getType().equalsIgnoreCase(FilterConst.FLOW_CTL_TYPE_PATH)
+                    && path.equals(flowCtlConfig.getValue())) {
+                    flowCtlRule = FlowCtlByPathRule.getInstance(rule.getServiceId(),path);
+                }else if(flowCtlConfig.getType().equalsIgnoreCase(FilterConst.FLOW_CTL_TYPE_SERVICE)){
+                    
+                }
+                if(flowCtlRule != null){
+                    flowCtlRule.doFlowCtlFilter(flowCtlConfig,rule.getServiceId());
+                }
             }
         }
     }

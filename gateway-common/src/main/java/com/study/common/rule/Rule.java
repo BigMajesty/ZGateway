@@ -59,7 +59,10 @@ public class Rule implements Comparable<Rule>, Serializable {
     private RetryConfig retryConfig = new RetryConfig();
 
     //限流
-    private Set<FlowCtlConfig> flowCtlConfig = new HashSet<>();
+    private Set<FlowCtlConfig> flowCtlConfigSet = new HashSet<>();
+
+    //熔断
+    private Set<HystrixConfig> hystrixConfigSet = new HashSet<>();
 
     public Rule() {
         super();
@@ -179,13 +182,52 @@ public class Rule implements Comparable<Rule>, Serializable {
             this.config = config;
         }
     }
+    
+    public static class HystrixConfig{
+        private String path;
+        private int timeoutInMilliseconds;
+        private int threadCoreSize;
+        private String  fallbackResponse;
 
-    public Set<FlowCtlConfig> getFlowCtlConfig() {
-        return flowCtlConfig;
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public int getTimeoutInMilliseconds() {
+            return timeoutInMilliseconds;
+        }
+
+        public void setTimeoutInMilliseconds(int timeoutInMilliseconds) {
+            this.timeoutInMilliseconds = timeoutInMilliseconds;
+        }
+
+        public int getThreadCoreSize() {
+            return threadCoreSize;
+        }
+
+        public void setThreadCoreSize(int threadCoreSize) {
+            this.threadCoreSize = threadCoreSize;
+        }
+
+        public String getFallbackResponse() {
+            return fallbackResponse;
+        }
+
+        public void setFallbackResponse(String fallbackResponse) {
+            this.fallbackResponse = fallbackResponse;
+        }
     }
 
-    public void setFlowCtlConfig(Set<FlowCtlConfig> flowCtlConfig) {
-        this.flowCtlConfig = flowCtlConfig;
+    public Set<FlowCtlConfig> getFlowCtlConfigSet() {
+        return flowCtlConfigSet;
+    }
+
+    public void setFlowCtlConfigSet(Set<FlowCtlConfig> flowCtlConfigSet) {
+        this.flowCtlConfigSet = flowCtlConfigSet;
     }
 
     public RetryConfig getRetryConfig() {
@@ -194,6 +236,14 @@ public class Rule implements Comparable<Rule>, Serializable {
 
     public void setRetryConfig(RetryConfig retryConfig) {
         this.retryConfig = retryConfig;
+    }
+
+    public Set<HystrixConfig> getHystrixConfigSet() {
+        return hystrixConfigSet;
+    }
+
+    public void setHystrixConfigSet(Set<HystrixConfig> hystrixConfigSet) {
+        this.hystrixConfigSet = hystrixConfigSet;
     }
 
     /**

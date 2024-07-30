@@ -13,9 +13,9 @@ public interface IContext {
     int RUNNING = 1;
 
     /**
-     * 运行过程发生错误，对其进行标记，告知请求结束，需要返回客户端
+     * 标志请求结束，写回Response
      */
-    int WRITTEN = 0;
+    int WRITTEN = 1;
 
     /**
      * 标记写回成功，防止并发情况下的多次写回
